@@ -1,0 +1,62 @@
+from telegram import Update, ForceReply
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+import random
+
+# Insert your BotFather token here
+TOKEN = '7759887178:AAE5v3YfRUoeID51kt0Zl_bS-lUAKJmyL3A'
+
+# List of characters or possible attacks
+characters = ["Hamster", "Rabbit", "Turtle"]
+attacks = ["Punch", "Kick", "Super Hit"]
+
+# Start command function
+def start(update: Update, context: CallbackContext) -> None:
+    update.message.reply_text('Welcome to the combat game! Choose your character by typing /choose')
+
+# Function to choose a character
+def choose_character(update: Update, context: CallbackContext) -> None:
+    character = random.choice(characters)
+    context.user_data['character'] = character
+    update.message.reply_text(f'You have chosen {character}! Start fighting by typing /fight')
+
+# Function to initiate a fight
+def fight(update: Update, context: CallbackContext) -> None:
+    if 'character' not in context.user_data:
+        update.message.reply_text('You need to choose a character first by typing /choose')
+        return
+    
+    player_attack = random.choice(attacks)
+    enemy_attack = random.choice(attacks)
+    
+    result = f'You used {player_attack}\nEnemy used {enemy_attack}\n'
+    
+    if player_attack == "Super Hit" and enemy_attack != "Super Hit":
+        result += "You won!"
+    elif enemy_attack == "Super Hit" and player_attack != "Super Hit":
+        result += "You lost!"
+    else:
+        result += "The battle continues..."
+    
+    update.message.reply_text(result)
+
+# Main function to run the bot
+def main() -> None:
+    # Create Updater
+    updater = Updater(TOKEN)
+    
+    # Get the dispatcher to register handlers
+    dispatcher = updater.dispatcher
+
+    # Add command handlers
+    dispatcher.add_handler(CommandHandler("start", start))
+    dispatcher.add_handler(CommandHandler("choose", choose_character))
+    dispatcher.add_handler(CommandHandler("fight", fight))
+
+    # Start the bot
+    updater.start_polling()
+
+    # Keep the bot running
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
